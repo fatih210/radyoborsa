@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Radyo Borsa - Canlı Yayın</title>
+<script>
+// CSS'i JavaScript ile ekle
+document.addEventListener('DOMContentLoaded', function() {
+    var style = document.createElement('style');
+    style.textContent = `
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
+        .radio-player{background:rgba(255,255,255,0.95);border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.1);padding:30px;max-width:400px;width:100%;text-align:center;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);}
+        .radio-header{display:flex;align-items:center;justify-content:center;gap:15px;margin-bottom:25px;}
+        .radio-icon{width:60px;height:60px;background:linear-gradient(135deg,#ff6b6b,#ee5a24);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:24px;box-shadow:0 5px 15px rgba(238,90,36,0.3);}
+        .station-info{text-align:left;}
+        .station-name{font-size:22px;font-weight:bold;color:#2c3e50;margin-bottom:5px;}
+        .station-description{color:#7f8c8d;font-size:14px;}
+        .visualizer{height:60px;background:#f8f9fa;border-radius:10px;margin:25px 0;display:flex;align-items:end;justify-content:center;gap:3px;padding:10px;border:1px solid #e9ecef;}
+        .bar{width:4px;background:linear-gradient(to top,#667eea,#764ba2);border-radius:2px;transition:height 0.3s ease;}
+        .controls{display:flex;justify-content:center;align-items:center;gap:20px;margin:30px 0;flex-direction:column;}
+        .play-btn{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#4CAF50,#45a049);border:none;color:white;font-size:24px;cursor:pointer;transition:all 0.3s ease;box-shadow:0 8px 20px rgba(76,175,80,0.3);display:flex;align-items:center;justify-content:center;}
+        .play-btn:hover{transform:scale(1.1);box-shadow:0 12px 25px rgba(76,175,80,0.4);}
+        .play-btn.playing{background:linear-gradient(135deg,#f44336,#e53935);box-shadow:0 8px 20px rgba(244,67,54,0.3);}
+        .play-instruction{color:#7f8c8d;font-size:14px;margin-top:10px;font-weight:500;}
+        .volume-control{display:flex;align-items:center;gap:10px;margin:20px 0;padding:0 10px;}
+        .volume-icon{color:#7f8c8d;font-size:18px;}
+        .volume-slider{flex:1;height:6px;background:#e9ecef;border-radius:3px;outline:none;}
+        .volume-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#667eea;border-radius:50%;cursor:pointer;box-shadow:0 2px 6px rgba(102,126,234,0.4);}
+        .status-container{margin:20px 0;}
+        .status{padding:12px 20px;border-radius:25px;font-size:14px;font-weight:500;display:inline-block;background:#f8f9fa;color:#6c757d;border:1px solid #e9ecef;}
+        .status.connected{background:#d4edda;color:#155724;border-color:#c3e6cb;}
+        .status.error{background:#f8d7da;color:#721c24;border-color:#f5c6cb;}
+        .frequency{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:8px 16px;border-radius:15px;font-size:12px;font-weight:bold;display:inline-block;margin-top:10px;}
+        .radio-footer{margin-top:20px;padding-top:15px;border-top:1px solid #e9ecef;}
+        .social-links{display:flex;justify-content:center;gap:15px;margin-bottom:15px;}
+        .telegram-link{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0088cc,#006699);color:white;text-decoration:none;padding:10px 20px;border-radius:25px;font-size:14px;font-weight:500;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(0,136,204,0.3);}
+        .telegram-link:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,136,204,0.4);}
+        .domain-info{font-size:11px;color:#95a5a6;margin-top:5px;}
+        .listeners{display:flex;align-items:center;justify-content:center;gap:5px;color:#7f8c8d;font-size:12px;margin-top:8px;}
+        .pulse{animation:pulse 2s infinite;}
+        .telegram-pulse{animation:pulse 3s infinite;}
+        .config-info{font-size:10px;color:#bdc3c7;margin-top:5px;}
+        @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);}}
+        @media (max-width:480px){.radio-player{padding:20px;margin:10px;}.radio-header{flex-direction:column;text-align:center;}.station-info{text-align:center;}}
+    `;
+    document.head.appendChild(style);
+});
+</script>
+</head>
+<body>
+<div class="radio-player">
+<div class="radio-header">
+<div class="radio-icon">🎤</div>
+<div class="station-info">
+<div class="station-name">Radyo Borsa</div>
+<div class="station-description">Muzik ve Finans - Canli Yayin</div>
+</div>
+</div>
+<div class="visualizer" id="visualizer"></div>
+<div class="controls">
+<button class="play-btn" id="playButton">▶</button>
+<div class="play-instruction" id="playInstruction">Dinlemek icin PLAY tusuna basin</div>
+</div>
+<div class="volume-control">
+<span class="volume-icon">🔉</span>
+<input type="range" id="volume" class="volume-slider" min="0" max="100" value="50"/>
+<span class="volume-icon">🔊</span>
+</div>
+<div class="status-container">
+<div class="status" id="status">Yayin Durgu</div>
+</div>
+<div class="frequency">📡 CANLI YAYIN</div>
+<div class="radio-footer">
+<div class="social-links">
+<a href="https://t.me/borsa_yapayzeka" class="telegram-link telegram-pulse" target="_blank">
+📢 Telegram Kanalimiz
+</a>
+</div>
+<div class="listeners">
+🎧 <span id="listenerCount">0</span> dinleyici
+</div>
+<div class="domain-info" id="domainInfo">Baglaniyor...</div>
+<div class="config-info" id="configInfo">Blogger - Canli Yayin</div>
+</div>
+</div>
+
+<script>
+class RadioPlayer {
+constructor() {
+this.audio = new Audio();
+this.isPlaying = false;
+this.volume = 0.5;
+this.visualizerBars = [];
+this.listenerCount = Math.floor(Math.random() * 50) + 10;
+this.currentConfig = null;
+this.currentStream = 'http://37.157.242.104:7618/;';
+this.currentHostname = 'Radyo Borsa - Canli Yayin';
+this.initializeElements();
+this.setupEventListeners();
+this.createVisualizer();
+this.loadStreamConfig();
+this.startVisualizer();
+}
+initializeElements() {
+this.playButton = document.getElementById('playButton');
+this.playInstruction = document.getElementById('playInstruction');
+this.volumeSlider = document.getElementById('volume');
+this.statusElement = document.getElementById('status');
+this.domainInfoElement = document.getElementById('domainInfo');
+this.configInfoElement = document.getElementById('configInfo');
+this.visualizerElement = document.getElementById('visualizer');
+this.listenerCountElement = document.getElementById('listenerCount');
+}
+loadStreamConfig() {
+try {
+this.updateStatus('Yayin hazirlaniyor...');
+this.currentConfig = {streamUrl: this.currentStream,hostname: this.currentHostname};
+this.domainInfoElement.textContent = this.currentHostname;
+this.configInfoElement.textContent = "Blogger - Canli Yayin - Port: 7618";
+this.updateStatus('Yayin Hazir');
+this.playInstruction.textContent = "Dinlemek icin PLAY tusuna basin";
+} catch (error) {
+console.error('Config hatasi:', error);
+}
+}
+createVisualizer() {
+for (let i = 0; i < 20; i++) {
+const bar = document.createElement('div');
+bar.className = 'bar';
+bar.style.height = '10px';
+this.visualizerElement.appendChild(bar);
+this.visualizerBars.push(bar);
+}
+}
+startVisualizer() {
+setInterval(() => {
+if (this.isPlaying) {
+this.visualizerBars.forEach(bar => {
+const height = Math.random() * 40 + 10;
+bar.style.height = height + 'px';
+bar.style.opacity = Math.random() * 0.5 + 0.5;
+});
+}
+}, 200);
+}
+setupEventListeners() {
+this.playButton.addEventListener('click', () => this.togglePlay());
+this.volumeSlider.addEventListener('input', (e) => this.setVolume(e.target.value / 100));
+this.audio.addEventListener('loadstart', () => {
+this.updateStatus('Baglaniyor...');
+this.playInstruction.textContent = "Baglaniyor...";
+});
+this.audio.addEventListener('canplay', () => {
+this.updateStatus('Yayin Hazir');
+this.playInstruction.textContent = "Dinlemek icin PLAY tusuna basin";
+});
+this.audio.addEventListener('playing', () => {
+this.updateStatus('CANLI YAYIN', 'connected');
+this.isPlaying = true;
+this.playButton.innerHTML = '⏸';
+this.playButton.classList.add('playing', 'pulse');
+this.playInstruction.textContent = "Yayin Devam Ediyor";
+this.updateListenerCount();
+});
+this.audio.addEventListener('pause', () => {
+this.isPlaying = false;
+this.playButton.innerHTML = '▶';
+this.playButton.classList.remove('playing', 'pulse');
+this.playInstruction.textContent = "Dinlemek icin PLAY tusuna basin";
+this.visualizerBars.forEach(bar => bar.style.height = '10px');
+});
+this.audio.addEventListener('error', (e) => {
+console.error('Audio error:', e);
+this.updateStatus('Baglanti Hatasi', 'error');
+this.playButton.classList.remove('pulse');
+this.playInstruction.textContent = "Baglanti hatasi - Tekrar deneyin";
+});
+}
+togglePlay() {
+if (this.isPlaying) {
+this.pause();
+} else {
+this.play();
+}
+}
+play() {
+if (!this.currentConfig) {
+this.updateStatus('Konfigurasyon bekleniyor...', 'error');
+return;
+}
+try {
+console.log('Stream URL:', this.currentConfig.streamUrl);
+this.audio.src = this.currentConfig.streamUrl;
+this.audio.load();
+const playPromise = this.audio.play();
+if (playPromise !== undefined) {
+playPromise.then(() => {
+console.log('Baglanti basarili!');
+}).catch(error => {
+console.error('Oynatma hatasi:', error);
+this.updateStatus('Yayin Acilamadi', 'error');
+this.playInstruction.textContent = "Yayin acilamadi - Tekrar deneyin";
+});
+}
+} catch (error) {
+console.error('Radyo baglanti hatasi:', error);
+this.updateStatus('Baglanti Hatasi', 'error');
+this.playInstruction.textContent = "Baglanti hatasi - Tekrar deneyin";
+}
+}
+pause() {
+this.audio.pause();
+this.updateStatus('Yayin Durgu');
+}
+setVolume(level) {
+this.volume = level;
+this.audio.volume = level;
+}
+updateStatus(message, type = '') {
+this.statusElement.textContent = message;
+this.statusElement.className = 'status';
+if (type) {
+this.statusElement.classList.add(type);
+}
+}
+updateListenerCount() {
+setInterval(() => {
+if (this.isPlaying) {
+const change = Math.random() > 0.5 ? 1 : -1;
+this.listenerCount = Math.max(5, this.listenerCount + change);
+this.listenerCountElement.textContent = this.listenerCount;
+}
+}, 5000);
+}
+}
+document.addEventListener('DOMContentLoaded', () => {
+new RadioPlayer();
+});
+</script>
+</body>
+</html>
